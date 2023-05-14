@@ -1,6 +1,8 @@
 // const mysql = require('mysql2/promise');
 import mysql from 'mysql2/promise';
 import { paint } from '../utils/concolecolor.js';
+import ora from 'ora';
+
 class MysqlPlugin {
   #connection = null;
 
@@ -14,23 +16,29 @@ class MysqlPlugin {
   }
 
   async connect() {
-    console.log('Creating connection to MySQL', paint('...', 'Yellow'));
-    this.#connection = await mysql.createConnection({
-      host: this.hostname,
-      port: this.port,
-      user: this.user,
-      password: this.password,
-      database: this.database,
-    });
+    const console_connection = ora({
+      discardStdin: false,
+      text: 'Creating MySQL connection',
+    }).start();
 
-    console.log('Connected to MySQL', paint('✓', 'Green'));
+    try {
+      this.#connection = await mysql.createConnection({
+        host: this.hostname,
+        port: this.port,
+        user: this.user,
+        password: this.password,
+        database: this.database,
+      });
+      console_connection.succeed('Connected to MySQL');
+    } catch (error) {
+      console_connection.fail('Failed to connect to MySQL');
+      throw error;
+    }
   }
 
   async disconnect() {
     if (!this.#connection) return;
-    console.log('Disconnecting from MySQL', paint('...', 'Yellow'));
-    await this.connection.end();
-    console.log('Disconnected from MySQL', paint('✓', 'Green'));
+    await this.#connection.end();
   }
 
   async query(query) {

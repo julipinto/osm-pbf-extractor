@@ -1,6 +1,5 @@
 // const mysql = require('mysql2/promise');
 import mysql from 'mysql2/promise';
-import { paint } from '../utils/concolecolor.js';
 import ora from 'ora';
 
 class MysqlPlugin {
@@ -29,20 +28,35 @@ class MysqlPlugin {
         password: this.password,
         database: this.database,
       });
+
       console_connection.succeed('Connected to MySQL');
+
+      await this.init();
     } catch (error) {
       console_connection.fail('Failed to connect to MySQL');
       throw error;
     }
   }
 
+  async init() {
+    await this.#connection.query(
+      'LOCK TABLES nodes WRITE, node_tags WRITE, ways WRITE, way_tags WRITE, way_nodes WRITE'
+    );
+    await this.#connection.query('SET FOREIGN_KEY_CHECKS = 0;');
+  }
+
   async disconnect() {
     if (!this.#connection) return;
+    await this.#connection.query('UNLOCK TABLES');
     await this.#connection.end();
   }
 
   async query(query) {
-    await this.#connection.query(query);
+    try {
+      await this.#connection.query(query);
+    } finally {
+      await this.#connection.query('UNLOCK TABLES');
+    }
   }
 }
 

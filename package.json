@@ -12,5 +12,7 @@
   "scripts": {
     "start": "node ./src/index.js"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^8.40.0"
+  }
 }

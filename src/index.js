@@ -1,9 +1,8 @@
 import { Transform } from 'node:stream';
 import { resolve } from 'node:path';
 import { OSMTransform } from 'osm-pbf-parser-node';
-import { createReadStream, createWriteStream } from 'node:fs';
-import MysqlPlugin from './plugins/mysql.js';
-import QueryBuilder from './utils/querybuilder.js';
+import { createReadStream } from 'node:fs';
+import QueryBuilder from './plugins/mysql/MysqlQueryBuilder.js';
 import DBSpinner from './utils/dbspinner.js';
 
 console.time('database load');
@@ -18,18 +17,14 @@ const args = {
   path: 'C:\\Users\\nana-\\Documents\\uefs\\TCC\\bases de dados\\bahia.osm.pbf',
 };
 
-const mysql = new MysqlPlugin(args);
-
-// (24052682, 559048564, 3),
-
 async function run() {
-  await mysql.connect();
-
   const console_spinner = new DBSpinner();
 
   const path = resolve(args.path);
   const readStream = createReadStream(path);
-  const qb = new QueryBuilder(mysql, INSERTION_LIMIT, console_spinner);
+
+  const qb = new QueryBuilder(INSERTION_LIMIT, console_spinner);
+  await qb.init(args);
 
   const consume = new Transform.PassThrough({
     objectMode: true,
@@ -81,12 +76,13 @@ async function run() {
     .on('finish', () => {
       console_spinner.spinner.succeed('Database load finished');
       console.timeEnd('database load');
-      mysql.disconnect();
+      qb.close();
     })
     .on('error', (err) => {
       console_spinner.spinner.fail('Database load failed');
       console.timeEnd('database load');
       console.log(err);
+      qb.close();
     });
 }
 

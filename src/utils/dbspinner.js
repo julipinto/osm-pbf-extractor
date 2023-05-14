@@ -1,4 +1,5 @@
 import ora from 'ora';
+import { paint } from './conscolor.js';
 
 class DBSpinner {
   spinner = null;
@@ -15,7 +16,10 @@ class DBSpinner {
   load(table) {
     if (this.current_load != table) {
       this.current_load = table;
-      this.spinner.text = `Loading data into table ${table}`;
+      this.spinner.text = `Loading data into database ${paint(
+        `> Table: ${table}\n`,
+        'yellow'
+      )}`;
     }
   }
 }

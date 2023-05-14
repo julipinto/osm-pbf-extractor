@@ -1,25 +1,36 @@
-class QueryBuilder {
+import MysqlPlugin from './mysql.js';
+
+class MySQLQueryBuilder {
   nodes = [];
   node_tags = [];
   ways = [];
   way_tags = [];
   way_nodes = [];
 
-  constructor(server, insertionLimit, spinner) {
-    this.server = server;
-    this.insertionLimit = insertionLimit;
+  constructor(INSERTION_LIMIT, spinner) {
+    this.server = null;
+    this.INSERTION_LIMIT = INSERTION_LIMIT;
     this.spinner = spinner;
   }
 
+  async init(args) {
+    this.server = new MysqlPlugin(args);
+    await this.server.connect();
+  }
+
+  async close() {
+    await this.server.disconnect();
+  }
+
   #sanitize(str) {
-    return str.replaceAll(`'`, `\\'`);
+    return str.replaceAll(`\\`, `\\\\"`).replaceAll(`'`, `\\'`);
   }
 
   async insertNode(id, lat, lon) {
     this.spinner.load('nodes');
 
     this.nodes.push(`(${id}, POINT(${lat}, ${lon}))`);
-    if (this.nodes.length >= this.insertionLimit) await this.flushNodes();
+    if (this.nodes.length >= this.INSERTION_LIMIT) await this.flushNodes();
   }
 
   async flushNodes() {
@@ -38,7 +49,7 @@ class QueryBuilder {
     this.node_tags.push(
       `(${id}, '${this.#sanitize(key)}', '${this.#sanitize(value)}')`
     );
-    if (this.node_tags.length >= this.insertionLimit) {
+    if (this.node_tags.length >= this.INSERTION_LIMIT) {
       await this.flushNodes();
       await this.flushNodeTags();
     }
@@ -57,7 +68,7 @@ class QueryBuilder {
     this.spinner.load('ways');
 
     this.ways.push(`(${id})`);
-    if (this.ways.length >= this.insertionLimit) await this.flushWays();
+    if (this.ways.length >= this.INSERTION_LIMIT) await this.flushWays();
   }
 
   async flushWays() {
@@ -73,7 +84,7 @@ class QueryBuilder {
     this.way_tags.push(
       `(${id}, '${this.#sanitize(key)}', '${this.#sanitize(value)}')`
     );
-    if (this.way_tags.length >= this.insertionLimit) {
+    if (this.way_tags.length >= this.INSERTION_LIMIT) {
       await this.flushWays();
       await this.flushWayTags();
     }
@@ -92,7 +103,7 @@ class QueryBuilder {
     this.spinner.load('way_nodes');
 
     this.way_nodes.push(`(${way_id}, ${node_id}, ${sequence_index})`);
-    if (this.way_nodes.length >= this.insertionLimit) {
+    if (this.way_nodes.length >= this.INSERTION_LIMIT) {
       await this.flushNodes();
       await this.flushWays();
       await this.flushWayNodes();
@@ -104,9 +115,7 @@ class QueryBuilder {
     const query = `INSERT INTO way_nodes (way_id, node_id, sequence_index) VALUES ${this.way_nodes.join(
       ','
     )};`;
-    await this.server.query('SET FOREIGN_KEY_CHECKS = 0;');
     await this.server.query(query);
-    await this.server.query('SET FOREIGN_KEY_CHECKS = 1;');
 
     this.way_nodes = [];
   }
@@ -120,4 +129,4 @@ class QueryBuilder {
   }
 }
 
-export default QueryBuilder;
+export default MySQLQueryBuilder;

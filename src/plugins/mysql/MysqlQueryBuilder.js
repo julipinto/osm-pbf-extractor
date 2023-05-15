@@ -50,7 +50,7 @@ class MySQLQueryBuilder {
       `(${id}, '${this.#sanitize(key)}', '${this.#sanitize(value)}')`
     );
     if (this.node_tags.length >= this.INSERTION_LIMIT) {
-      await this.flushNodes();
+      // await this.flushNodes();
       await this.flushNodeTags();
     }
   }
@@ -85,7 +85,7 @@ class MySQLQueryBuilder {
       `(${id}, '${this.#sanitize(key)}', '${this.#sanitize(value)}')`
     );
     if (this.way_tags.length >= this.INSERTION_LIMIT) {
-      await this.flushWays();
+      // await this.flushWays();
       await this.flushWayTags();
     }
   }
@@ -104,8 +104,8 @@ class MySQLQueryBuilder {
 
     this.way_nodes.push(`(${way_id}, ${node_id}, ${sequence_index})`);
     if (this.way_nodes.length >= this.INSERTION_LIMIT) {
-      await this.flushNodes();
-      await this.flushWays();
+      // await this.flushNodes();""
+      // await this.flushWays();
       await this.flushWayNodes();
     }
   }

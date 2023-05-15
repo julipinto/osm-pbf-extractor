@@ -6,7 +6,7 @@ import QueryBuilder from './plugins/mysql/MysqlQueryBuilder.js';
 import DBSpinner from './utils/dbspinner.js';
 
 console.time('database load');
-const INSERTION_LIMIT = 200;
+const INSERTION_LIMIT = 500;
 
 const args = {
   file: 'bahia.osm.pbf',

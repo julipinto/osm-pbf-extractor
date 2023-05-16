@@ -4,23 +4,16 @@ import { OSMTransform } from 'osm-pbf-parser-node';
 import { createReadStream } from 'node:fs';
 import QueryBuilder from './plugins/mysql/MysqlQueryBuilder.js';
 import DBSpinner from './utils/dbspinner.js';
+import { args } from './utils/argparser.js';
 
 console.time('database load');
-const INSERTION_LIMIT = 500;
-
-const args = {
-  file: 'bahia.osm.pbf',
-  database: 'bahia',
-  user: 'root',
-  password: '1234',
-  dbmanager: 'mysql',
-  path: 'C:\\Users\\nana-\\Documents\\uefs\\TCC\\bases de dados\\bahia.osm.pbf',
-};
+const INSERTION_LIMIT = args.insertion_limit ?? 500;
 
 async function run() {
   const console_spinner = new DBSpinner();
 
-  const path = resolve(args.path);
+  const path = resolve(args.file);
+
   const readStream = createReadStream(path);
 
   const qb = new QueryBuilder(INSERTION_LIMIT, console_spinner);

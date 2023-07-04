@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { Transform } from 'node:stream';
 import { resolve } from 'node:path';
 import { OSMTransform } from 'osm-pbf-parser-node';

@@ -1,7 +1,10 @@
 {
-  "type": "module",
   "name": "pbfdb",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "version": "0.0.1",
+  "type": "module",
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
@@ -10,22 +13,19 @@
     "osm-pbf-parser-node": "^1.1.0"
   },
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "node ./src/index.js",
+    "bundle": "webpack --config webpack.config.js",
+    "compile": "pkg --out-path dist/bin --targets node18-win,node18-linux dist/pbfdb.js",
+    "build": "npm run bundle && npm run compile"
   },
   "devDependencies": {
-    "eslint": "^8.40.0"
-  },
-  "bin": {
-    "pbfdb": "./src/index.js"
-  },
-  "pkg": {
-    "assets": [
-      "src/*"
-    ],
-    "targets": [
-      "node18",
-      "win-x64",
-      "linux-x64"
-    ]
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.22.8",
+    "@babel/preset-env": "^7.22.7",
+    "babel-loader": "^9.1.3",
+    "eslint": "^8.40.0",
+    "pkg": "^5.8.1",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4"
   }
 }

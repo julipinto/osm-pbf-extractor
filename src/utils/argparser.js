@@ -22,6 +22,14 @@ const options = {
     type: 'string',
     short: 'm',
   },
+  host: {
+    type: 'string',
+    short: 'h',
+  },
+  port: {
+    type: 'string',
+    short: 'o',
+  },
   insertion_limit: {
     type: 'string',
     short: 'l',
@@ -40,27 +48,32 @@ let requiredArgsMissing = [];
 if (
   requiredArgsMissing.length === 4 &&
   !values.dbmanager &&
-  !values.insertion_limit
+  !values.insertion_limit &&
+  !values.host &&
+  !values.port
 ) {
-  console.log(`
+
+console.log(`
 Welcome to PBF Parser!
 
 Usage
 Required arguments:
---file, -f\t\t\t[.pbf] file to be parsed path
---database, -d\t\t\tDatabase name
---user, -u\t\t\tDatabase user
---password, -u\t\t\tDatabase password
+-f, --file\t\t\t[.pbf] file to be parsed path
+-d, --database\t\t\tDatabase name
+-u, --user\t\t\tDatabase user
+-p, --password\t\t\tDatabase password
 
 Optional arguments:
---dbmanager, -dbm\t\tDatabase manager (default: mysql)
---insertion_limit, -il\t\tumber of rows to be inserted at once (default: 500)
+-m, --dbmanager\t\t\tDatabase manager (default: mysql)
+-l, --insertion_limit\t\tumber of rows to be inserted at once (default: 500)
+-h, --host\t\t\tDatabase host (default: localhost)
+-o, --port\t\t\tDatabase port (default: 3306)
 
-example: 
-  pbfx --file {path_to_file} --database {db name} --user {user} --password {password} --dbmanager {dbmanager}
-  pbfx -f {path_to_file} -d {db name} -u {user} -p {password} -m {dbmanager} -l {limit}
+example:
+  pbfx --file {path_to_file} --database {db name} --user {user} --password {password} --dbmanager {dbmanager} --insertion_limit {limit} --host {host} --port {port}
+
+  pbfx -f {path_to_file} -d {db name} -u {user} -p {password} -m {dbmanager} -l {limit} -h {host} -o {port}
 `);
-
   exit(0);
 }
 
@@ -88,8 +101,8 @@ if (values.insertion_limit) {
 
 const args = {
   ...values,
-  ...(values.insertion_limit ?? {
-    insertion_limit: Number(values.insertion_limit),
+  ...(values.insertion_limit || {
+    insertion_limit: parseInt(values.insertion_limit),
   }),
 };
 

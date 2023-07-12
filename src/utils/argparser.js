@@ -2,9 +2,6 @@ import { parseArgs } from 'node:util';
 import { exit } from 'node:process';
 
 const options = {
-  help: {
-    type: 'boolean',
-  },
   input_file: {
     type: 'string',
     short: 'i',
@@ -41,6 +38,9 @@ const options = {
     type: 'boolean',
     short: 'P',
   },
+  help: {
+    type: 'boolean',
+  },
 };
 
 const { values } = parseArgs({ options });
@@ -76,9 +76,9 @@ Optional arguments:
 ⚠ Warning: this command will drop all tables to structure a database with the default schema
 
 exemples:
-  pbfx --file {path_to_file} --database {db name} --user {user} --password {password} --dbmanager {dbmanager} --insertion_limit {limit} --host {host} --port {port}
+  pbfx --input_file {path_to_file} --database {db name} --user {user} --password {password} --dbmanager {dbmanager} --insertion_limit {limit} --host {host} --port {port}
 
-  pbfx -f {path_to_file} -d {db name} -u {user} -p {password} -m {dbmanager} -l {limit} -h {host} -o {port}
+  pbfx -i {path_to_file} -d {db name} -u {user} -p {password} -m {dbmanager} -l {limit} -h {host} -o {port}
 `);
   exit(0);
 }

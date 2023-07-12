@@ -14,7 +14,7 @@ const INSERTION_LIMIT = args.insertion_limit ?? 500;
 async function run() {
   const console_spinner = new DBSpinner();
 
-  const path = resolve(args.file);
+  const path = resolve(args.input_file);
 
   const readStream = createReadStream(path);
 

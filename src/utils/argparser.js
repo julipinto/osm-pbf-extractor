@@ -2,9 +2,12 @@ import { parseArgs } from 'node:util';
 import { exit } from 'node:process';
 
 const options = {
-  file: {
+  help: {
+    type: 'boolean',
+  },
+  input_file: {
     type: 'string',
-    short: 'f',
+    short: 'i',
   },
   database: {
     type: 'string',
@@ -34,42 +37,45 @@ const options = {
     type: 'string',
     short: 'l',
   },
+  populate: {
+    type: 'boolean',
+    short: 'P',
+  },
 };
 
 const { values } = parseArgs({ options });
 
+
+
 let requiredArgsMissing = [];
-['file', 'database', 'user', 'password'].forEach((key) => {
+['input_file', 'database', 'user', 'password'].forEach((key) => {
   if (!values[key]) {
     requiredArgsMissing.push(key);
   }
 });
 
-if (
-  requiredArgsMissing.length === 4 &&
-  !values.dbmanager &&
-  !values.insertion_limit &&
-  !values.host &&
-  !values.port
-) {
-
+if (values.help || Object.keys(values).length === 0) {
 console.log(`
 Welcome to PBF Parser!
 
 Usage
 Required arguments:
--f, --file\t\t\t[.pbf] file to be parsed path
+-i, --input_file\t\t[.pbf] file to be parsed path
 -d, --database\t\t\tDatabase name
 -u, --user\t\t\tDatabase user
 -p, --password\t\t\tDatabase password
 
 Optional arguments:
 -m, --dbmanager\t\t\tDatabase manager (default: mysql)
--l, --insertion_limit\t\tumber of rows to be inserted at once (default: 500)
+-l, --insertion_limit\t\tNumber of rows to be inserted at once (default: 500)
 -h, --host\t\t\tDatabase host (default: localhost)
 -o, --port\t\t\tDatabase port (default: 3306)
 
-example:
+⚠ Be careful with the optional following argument:
+-P, --populate\t\t\t⚠ Populate database with default schema (default: false) 
+⚠ Warning: this command will drop all tables to structure a database with the default schema
+
+exemples:
   pbfx --file {path_to_file} --database {db name} --user {user} --password {password} --dbmanager {dbmanager} --insertion_limit {limit} --host {host} --port {port}
 
   pbfx -f {path_to_file} -d {db name} -u {user} -p {password} -m {dbmanager} -l {limit} -h {host} -o {port}
@@ -93,7 +99,7 @@ if (values.insertion_limit) {
       `Invalid insertion_limit: ${values.insertion_limit}, must be a number`
     );
 
-  if (values.insertion_limit < 1)
+  if (parseInt(values.insertion_limit) < 1)
     throw new Error(
       `Invalid insertion_limit: ${values.insertion_limit}, must be greater than 0`
     );

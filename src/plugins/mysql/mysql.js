@@ -5,13 +5,14 @@ import ora from 'ora';
 class MysqlPlugin {
   #connection = null;
 
-  constructor({ database, hostname, port, user, password, populate}) {
+  constructor({ database, hostname, port, user, password, populate, connection_timeout}) {
     this.database = database ?? 'map';
     this.user = user ?? 'root';
     this.hostname = hostname ?? 'localhost';
     this.port = port ?? 3306;
     this.password = password ?? '';
     this.populate = populate ?? false;
+    this.connection_timeout = connection_timeout ?? 60_000;
   }
 
   async connect() {
@@ -22,15 +23,10 @@ class MysqlPlugin {
 
     if (this.populate) {
       try {
-        let populateConnection = await mysql.createConnection({
-          host: this.hostname,
-          port: this.port,
-          user: this.user,
-          password: this.password,
-        });
+        let populateConnection = await this.conectionWithTimeout({ timeout: this.connection_timeout });
 
         console_connection.start('Creating MySQL database with default schema');
-        await populateConnection.query(`DROP DATABASE ${this.database}`);
+        await populateConnection.query(`DROP DATABASE IF EXISTS ${this.database}`);
         await populateConnection.query(`CREATE DATABASE ${this.database}`);
         await populateConnection.query(`CREATE TABLE \`${this.database}\`.\`nodes\` ( \`node_id\` bigint(64) NOT NULL, \`location\` POINT NOT NULL SRID 0, PRIMARY KEY (node_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
         await populateConnection.query(`CREATE TABLE \`${this.database}\`.\`node_tags\` (\`node_id\` bigint(64) NOT NULL, \`tag_key\` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL default '', \`tag_value\` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL default '', PRIMARY KEY (\`node_id\`, \`tag_key\`), CONSTRAINT \`node_tags_ibfk_1\` FOREIGN KEY (\`node_id\`) REFERENCES \`nodes\` (\`node_id\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
@@ -48,13 +44,7 @@ class MysqlPlugin {
 
 
     try {
-      this.#connection = await mysql.createConnection({
-        host: this.hostname,
-        port: this.port,
-        user: this.user,
-        password: this.password,
-        database: this.database,
-      });
+      this.#connection = await this.conectionWithTimeout({ timeout: this.connection_timeout, database: this.database });
 
       console_connection.succeed('Connected to MySQL');
 
@@ -84,6 +74,39 @@ class MysqlPlugin {
     } finally {
       await this.#connection.query('UNLOCK TABLES');
     }
+  }
+
+  async conectionWithTimeout({ timeout, database }) {
+    const retryInterval = 5_000;
+    const start = Date.now();
+    let config = {
+      host: this.hostname,
+      port: this.port,
+      user: this.user,
+      password: this.password,
+    }
+
+    database ?? (config.database = this.database);
+
+    let lastError = null;
+
+    while(Date.now() - start < timeout) {
+      try {
+        const connection = await mysql.createConnection(config);
+        return connection;
+      } catch (error) {
+        lastError = error;
+        if (error.code === 'ECONNREFUSED') {
+          console.error(`Connection refused. Retrying in ${retryInterval}ms`);
+          await new Promise((resolve) => setTimeout(resolve, retryInterval));
+          continue;
+        }else {
+          throw error;
+        }
+      }
+    }
+
+    throw new Error(`Database connection timeout after attempt for ${timeout}ms\n\n`, lastError);
   }
 }
 

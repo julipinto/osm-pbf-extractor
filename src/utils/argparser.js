@@ -22,7 +22,7 @@ const options = {
     type: 'string',
     short: 'm',
   },
-  host: {
+  hostname: {
     type: 'string',
     short: 'h',
   },
@@ -36,7 +36,11 @@ const options = {
   },
   populate: {
     type: 'boolean',
-    short: 'P',
+    short: 'A',
+  },
+  connection_timeout: {
+    type: 'string',
+    short: 't',
   },
   help: {
     type: 'boolean',
@@ -68,11 +72,12 @@ Required arguments:
 Optional arguments:
 -m, --dbmanager\t\t\tDatabase manager (default: mysql)
 -l, --insertion_limit\t\tNumber of rows to be inserted at once (default: 500)
--h, --host\t\t\tDatabase host (default: localhost)
+-h, --hostname\t\t\tDatabase host (default: localhost)
 -o, --port\t\t\tDatabase port (default: 3306)
+-t, --connection_timeout\tTimeout to try to connect with the Database in milliseconds (default: 60000ms [one minute])
 
-⚠ Be careful with the optional following argument:
--P, --populate\t\t\t⚠ Populate database with default schema (default: false) 
+⚠ Be careful with the following optional argument:
+-A, --populate\t\t\t⚠ Populate database with default schema (default: false) 
 ⚠ Warning: this command will drop all tables to structure a database with the default schema
 
 exemples:

@@ -24,6 +24,7 @@ class MysqlPlugin {
     if (this.populate) {
       try {
         let populateConnection = await this.conectionWithTimeout({ timeout: this.connection_timeout });
+        console_connection.succeed('Connected to MySQL');
 
         console_connection.start('Creating MySQL database with default schema');
         await populateConnection.query(`DROP DATABASE IF EXISTS ${this.database}`);
@@ -46,7 +47,7 @@ class MysqlPlugin {
     try {
       this.#connection = await this.conectionWithTimeout({ timeout: this.connection_timeout, database: this.database });
 
-      console_connection.succeed('Connected to MySQL');
+      console_connection.succeed(`Connectec to database ${this.database}`);
 
       await this.init();
     } catch (error) {
@@ -86,7 +87,7 @@ class MysqlPlugin {
       password: this.password,
     }
 
-    database ?? (config.database = this.database);
+    if (database) config.database = database
 
     let lastError = null;
 

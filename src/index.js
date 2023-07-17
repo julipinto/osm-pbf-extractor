@@ -1,25 +1,28 @@
 #!/usr/bin/env node
 
 import { Transform } from 'node:stream';
-import { resolve } from 'node:path';
+import { resolve, parse } from 'node:path';
 import { OSMTransform } from 'osm-pbf-parser-node';
 import { createReadStream } from 'node:fs';
 import QueryBuilder from './plugins/mysql/MysqlQueryBuilder.js';
-import DBSpinner from './utils/dbspinner.js';
+import LoggerDBSpinner from './utils/dbspinner.js';
 import { args } from './utils/argparser.js';
 
 console.time('database load');
 const INSERTION_LIMIT = args.insertion_limit ?? 500;
 
 async function run() {
-  const console_spinner = new DBSpinner();
+  const spinner_logger = new LoggerDBSpinner();
 
   const path = resolve(args.input_file);
 
   const readStream = createReadStream(path);
 
-  const qb = new QueryBuilder(INSERTION_LIMIT, console_spinner);
+  const qb = new QueryBuilder(INSERTION_LIMIT, spinner_logger);
+
   await qb.init(args);
+
+  console.log(`Dumping ${parse(path).base} into database. It may take a while...`)
 
   const consume = new Transform.PassThrough({
     objectMode: true,
@@ -69,12 +72,12 @@ async function run() {
     )
     .pipe(consume)
     .on('finish', () => {
-      console_spinner.spinner.succeed('Database load finished');
+      spinner_logger.spinner.succeed('Database load finished');
       console.timeEnd('database load');
       qb.close();
     })
     .on('error', (err) => {
-      console_spinner.spinner.fail('Database load failed');
+      spinner_logger.spinner.fail('Database load failed');
       console.timeEnd('database load');
       console.log(err);
       qb.close();

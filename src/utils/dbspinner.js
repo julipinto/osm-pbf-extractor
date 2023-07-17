@@ -1,7 +1,7 @@
 import ora from 'ora';
 import { paint } from './conscolor.js';
 
-class DBSpinner {
+class LoggerDBSpinner {
   spinner = null;
   current_load = '';
 
@@ -24,4 +24,4 @@ class DBSpinner {
   }
 }
 
-export default DBSpinner;
+export default LoggerDBSpinner;

@@ -15,7 +15,7 @@
   "scripts": {
     "start": "node ./src/index.js",
     "bundle": "webpack --config webpack.config.js",
-    "compile": "pkg --out-path dist/bin --targets node18-win,node18-linux,node18-alpine,node18-linux-x64 dist/pbfdb.js",
+    "compile": "pkg --out-path dist/bin --targets node18-win,node18-linux,node18-alpine dist/pbfdb.js",
     "build": "npm run bundle && npm run compile"
   },
   "devDependencies": {

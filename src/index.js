@@ -4,7 +4,8 @@ import { Transform } from 'node:stream';
 import { resolve, parse } from 'node:path';
 import { OSMTransform } from 'osm-pbf-parser-node';
 import { createReadStream } from 'node:fs';
-import QueryBuilder from './plugins/mysql/MysqlQueryBuilder.js';
+// import QueryBuilder from './plugins/mysql/MysqlQueryBuilder.js';
+import queryBuilderFactory from './plugins/queryBuilderFactory.js';
 import LoggerDBSpinner from './utils/dbspinner.js';
 import { args } from './utils/argparser.js';
 
@@ -18,7 +19,7 @@ async function run() {
 
   const readStream = createReadStream(path);
 
-  const qb = new QueryBuilder(INSERTION_LIMIT, spinner_logger);
+  const qb = queryBuilderFactory(args.dbmanager ,INSERTION_LIMIT, spinner_logger);
 
   await qb.init(args);
 
@@ -71,7 +72,8 @@ async function run() {
       })
     )
     .pipe(consume)
-    .on('finish', () => {
+    .on('finish', async () => {
+      await qb.finishQuery();
       spinner_logger.spinner.succeed('Database load finished');
       console.timeEnd('database load');
       qb.close();

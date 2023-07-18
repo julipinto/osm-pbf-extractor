@@ -7,7 +7,7 @@ USE map;
 
 CREATE TABLE `map`.`nodes` (
   `node_id` bigint(64) NOT NULL,
-  `location` POINT NOT NULL SRID 0,
+  `location` POINT NOT NULL SRID 4326,
   PRIMARY KEY (node_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -21,6 +21,7 @@ CREATE TABLE `map`.`node_tags` (
 
 CREATE TABLE `map`.`ways` (
   `way_id` bigint(64) NOT NULL,
+  `way_line` LINESTRING DEFAULT NULL SRID 4326,
   PRIMARY KEY  (`way_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

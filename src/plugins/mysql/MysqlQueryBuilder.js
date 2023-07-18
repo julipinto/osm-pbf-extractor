@@ -1,4 +1,4 @@
-import MysqlPlugin from './mysql.js';
+import MysqlConnection from './MysqlConnection.js';
 
 class MySQLQueryBuilder {
   nodes = [];
@@ -14,7 +14,7 @@ class MySQLQueryBuilder {
   }
 
   async init(args) {
-    this.server = new MysqlPlugin(args);
+    this.server = new MysqlConnection(args);
     await this.server.connect();
   }
 
@@ -126,6 +126,14 @@ class MySQLQueryBuilder {
     await this.flushWays();
     await this.flushWayTags();
     await this.flushWayNodes();
+  }
+
+
+  async finishQuery() {
+    // Create way_line column
+    this.spinner.load('Creating way_line column');
+    const query = `CREATE TEMPORARY TABLE temp_table AS SELECT wn.way_id, ST_GeomFromText(CONCAT('LINESTRING(', GROUP_CONCAT(ST_AsText(n.location) ORDER BY wn.sequence_index SEPARATOR ','), ')')) AS way_line FROM way_nodes AS wn JOIN nodes AS n ON wn.node_id = n.node_id GROUP BY wn.way_id; UPDATE ways w JOIN temp_table temp ON w.way_id = temp.way_id SET w.way_line = temp.way_line; DROP TEMPORARY TABLE IF EXISTS temp_table;`
+    await this.server.query(query);
   }
 }
 

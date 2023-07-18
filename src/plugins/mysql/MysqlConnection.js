@@ -2,7 +2,7 @@
 import mysql from 'mysql2/promise';
 import ora from 'ora';
 
-class MysqlPlugin {
+class MysqlConnection {
   #connection = null;
 
   constructor({ database, hostname, port, user, password, populate, connection_timeout}) {
@@ -112,6 +112,6 @@ class MysqlPlugin {
 }
 
 
-export default MysqlPlugin;
+export default MysqlConnection;
 
 // Measure-Command { osmosis --read-pbf bahia.osm.pbf --write-apidb dbType="mysql" database="bahia" user="root" password="1234" validateSchemaVersion=no }

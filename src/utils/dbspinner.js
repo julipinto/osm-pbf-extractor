@@ -16,7 +16,7 @@ class LoggerDBSpinner {
   load(table) {
     if (this.current_load != table) {
       this.current_load = table;
-      this.spinner.text = `Loading data into database ${paint(
+      this.spinner.text = `Loading objects into database ${paint(
         `> Table: ${table}\n`,
         'yellow'
       )}`;

@@ -37,10 +37,10 @@ class PostgresQueryBuilder {
 
   async flushNodes() {
     if (this.nodes.length == 0) return;
-    const values = this.nodes.map(({ id, lat, lon }) => `(${id}, '${serialize('Point', [lat, lon])}')`);
-    const query = `INSERT INTO nodes (node_id, location) VALUES ${values.join(',')};`;
+    // const values = this.nodes.map(({ id, lat, lon }) => `(${id}, '${serialize('Point', [lat, lon])}')`);
+    // const query = `INSERT INTO nodes (node_id, location) VALUES ${values.join(',')};`;
 
-    await this.server.query(query);
+    // await this.server.query(query);
     this.nodes = [];
   }
 

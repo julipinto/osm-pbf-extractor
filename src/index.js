@@ -4,10 +4,10 @@ import { Transform } from 'node:stream';
 import { resolve, parse } from 'node:path';
 import { OSMTransform } from 'osm-pbf-parser-node';
 import { createReadStream } from 'node:fs';
-// import QueryBuilder from './plugins/mysql/MysqlQueryBuilder.js';
 import queryBuilderFactory from './plugins/queryBuilderFactory.js';
 import LoggerDBSpinner from './utils/dbspinner.js';
 import { args } from './utils/argparser.js';
+import { paint } from './utils/conscolor.js';
 
 console.time('database load');
 const INSERTION_LIMIT = args.insertion_limit ?? 500;
@@ -23,7 +23,7 @@ async function run() {
 
   await qb.init(args);
 
-  console.log(`Dumping ${parse(path).base} into database. It may take a while...`)
+  console.log(`Dumping ${paint(parse(path).base, 'blue')} into database. It may take a while...`)
 
   const consume = new Transform.PassThrough({
     objectMode: true,

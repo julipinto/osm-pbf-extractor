@@ -1,6 +1,7 @@
-import MysqlConnection from './MysqlConnection.js';
+// import { parse, serialize } from 'pg-geometry';
+import PostgresPlugin from './PostgresPlugin';
 
-class MySQLQueryBuilder {
+class PostgresQueryBuilder {
   nodes = [];
   node_tags = [];
   ways = [];
@@ -14,7 +15,7 @@ class MySQLQueryBuilder {
   }
 
   async init(args) {
-    this.server = new MysqlConnection(args);
+    this.server = new PostgresPlugin(args);
     await this.server.connect();
   }
 
@@ -22,14 +23,14 @@ class MySQLQueryBuilder {
     await this.server.disconnect();
   }
 
-  #sanitize(str) {
+  async #sanitize(str) {
     return str.replaceAll(`\\`, `\\\\"`).replaceAll(`'`, `\\'`);
   }
 
   async insertNode(id, lat, lon) {
     this.spinner.load('nodes');
 
-    this.nodes.push(`(${id}, POINT(${lat}, ${lon}))`);
+    this.nodes.push(`(${id}, ST_GeomFromText('POINT(${lat}, ${lon})', 4326))`);
     if (this.nodes.length >= this.INSERTION_LIMIT) await this.flushNodes();
   }
 
@@ -118,6 +119,24 @@ class MySQLQueryBuilder {
     this.way_nodes = [];
   }
 
+  // async insertNode(id, lat, lon) {
+  //   this.spinner.load('nodes');
+
+  //   this.nodes.push({ id, lat, lon });
+  //   if (this.nodes.length >= this.INSERTION_LIMIT) await this.flushNodes();
+  // }
+
+  // async flushNodes() {
+  //   if (this.nodes.length == 0) return;
+  //   // const values = this.nodes.map(({ id, lat, lon }) => `(${id}, '${serialize('Point', [lat, lon])}')`);
+  //   // const query = `INSERT INTO nodes (node_id, location) VALUES ${values.join(',')};`;
+
+  //   // await this.server.query(query);
+  //   this.nodes = [];
+  // }
+
+  // ... Implement other methods similarly using Postgres and PostGIS syntax
+
   async flushAll() {
     await this.flushNodes();
     await this.flushNodeTags();
@@ -125,28 +144,6 @@ class MySQLQueryBuilder {
     await this.flushWayTags();
     await this.flushWayNodes();
   }
-
-  async finishQuery() {
-    // Create way_line column
-    // this.spinner.load('ways - way_line column');
-    // // const query = `BEGIN; DROP TABLE IF EXISTS temp_way_lines; CREATE TEMPORARY TABLE temp_way_lines AS SELECT wn.way_id, ST_GeomFromText(CONCAT('LINESTRING(', GROUP_CONCAT(CONCAT(ST_X(n.location), ' ', ST_Y(n.location)) ORDER BY wn.sequence_index SEPARATOR ','), ')')) AS way_line FROM way_nodes AS wn JOIN nodes AS n ON wn.node_id = n.node_id GROUP BY wn.way_id; UPDATE ways AS w JOIN temp_way_lines AS temp ON w.way_id = temp.way_id SET w.way_line = temp.way_line; COMMIT;`
-    // // await this.server.query(query);
-    // try {
-    //   await this.server.query('SET GLOBAL group_concat_max_len = 446744073709551615;')
-    //   await this.server.beginTransaction();
-    //   await this.server.query('BEGIN;');
-    //   await this.server.query('DROP TABLE IF EXISTS temp_way_lines;');
-    //   await this.server.query(`CREATE TEMPORARY TABLE temp_way_lines SELECT wn.way_id, ST_GeomFromText(CONCAT('LINESTRING(', GROUP_CONCAT(CONCAT(ST_X(n.location), ' ', ST_Y(n.location)) ORDER BY wn.sequence_index SEPARATOR ','), ')')) AS way_line FROM way_nodes AS wn JOIN nodes AS n ON wn.node_id = n.node_id GROUP BY wn.way_id;`);
-    //   await this.server.query('UPDATE ways AS w JOIN temp_way_lines AS temp ON w.way_id = temp.way_id SET w.way_line = temp.way_line;');
-    //   await this.server.query('COMMIT;');
-    //   await this.server.commit();
-    // } catch (error) {
-    //   await this.server.rollback();
-    //   throw error;
-    // } finally {
-    //   await this.server.query('SET GLOBAL group_concat_max_len = @@global.group_concat_max_len;')
-    // }
-  }
 }
 
-export default MySQLQueryBuilder;
+export default PostgresQueryBuilder;

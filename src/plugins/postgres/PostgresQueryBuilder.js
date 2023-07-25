@@ -1,5 +1,5 @@
 // import { parse, serialize } from 'pg-geometry';
-import PostgresPlugin from './PostgresPlugin';
+import PostgresConnection from './PostgresConnection.js';
 
 class PostgresQueryBuilder {
   nodes = [];
@@ -15,7 +15,7 @@ class PostgresQueryBuilder {
   }
 
   async init(args) {
-    this.server = new PostgresPlugin(args);
+    this.server = new PostgresConnection(args);
     await this.server.connect();
   }
 

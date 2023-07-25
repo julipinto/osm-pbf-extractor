@@ -49,8 +49,6 @@ const options = {
 
 const { values } = parseArgs({ options });
 
-
-
 let requiredArgsMissing = [];
 ['input_file', 'database', 'user', 'password'].forEach((key) => {
   if (!values[key]) {
@@ -59,31 +57,31 @@ let requiredArgsMissing = [];
 });
 
 if (values.help || Object.keys(values).length === 0) {
-console.log(`
+  console.log(`
 Welcome to PBF Parser!
 
-Usage
+Usage:
 Required arguments:
--i, --input_file\t\t[.pbf] file to be parsed path
--d, --database\t\t\tDatabase name
--u, --user\t\t\tDatabase user
--p, --password\t\t\tDatabase password
+  -i, --input_file <input-file>      Path to the input PBF file.
+  -d, --database <database>          Database name.
+  -u, --user <user>                  Database user.
+  -p, --password <password>          Database password.
 
 Optional arguments:
--m, --dbmanager\t\t\tDatabase manager (default: mysql)
--l, --insertion_limit\t\tNumber of rows to be inserted at once (default: 500)
--h, --hostname\t\t\tDatabase host (default: localhost)
--o, --port\t\t\tDatabase port (default: 3306)
--t, --connection_timeout\tTimeout to try to connect with the Database in milliseconds (default: 60000ms [one minute])
+  -m, --dbmanager <manager>          Database manager. Valid values: mysql | postgres (default: mysql).
+  -l, --insertion_limit <limit>      Number of rows to be inserted at once (default: 500).
+  -h, --hostname <host>              Database host (default: localhost).
+  -o, --port <port>                   Database port (default value of each database chosen, ex: MySQL: 3306)
+  -t, --connection_timeout <timeout> Timeout to try to connect with the database in milliseconds (default: 60000ms [one minute]).
 
 ⚠ Be careful with the following optional argument:
--A, --populate\t\t\t⚠ Populate database with default schema (default: false) 
-⚠ Warning: this command will drop all tables to structure a database with the default schema
+  -A, --populate                     ⚠ Populate the database with the default schema (default: false).
+⚠ Warning: This command will drop all tables to structure a database with the default schema.
 
-exemples:
-  pbfx --input_file {path_to_file} --database {db name} --user {user} --password {password} --dbmanager {dbmanager} --insertion_limit {limit} --host {host} --port {port}
+Examples:
+  pbfx --input_file <path_to_file> --database <db_name> --user <user> --password <password> --dbmanager <dbmanager> --insertion_limit <limit> --hostname <host> --port <port>
 
-  pbfx -i {path_to_file} -d {db name} -u {user} -p {password} -m {dbmanager} -l {limit} -h {host} -o {port}
+  pbfx -i <path_to_file> -d <db_name> -u <user> -p <password> -m <dbmanager> -l <limit> -h <host> -o <port>
 `);
   exit(0);
 }

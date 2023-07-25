@@ -1,14 +1,12 @@
-import MySQLQueryBuilder from "./mysql/MysqlQueryBuilder.js";
-// import PostgisQueryBuilder from "./postgis/PostgisQueryBuilder.js";
+import MySQLQueryBuilder from './mysql/MysqlQueryBuilder.js';
+import PostgresQueryBuilder from './postgres/PostgresQueryBuilder.js';
 
 function queryBuilderFactory(dbmanager, INSERTION_LIMIT, spinner_logger) {
   switch (dbmanager) {
-    case 'postgis':
-      // return new PostgisQueryBuilder(INSERTION_LIMIT, spinner_logger);
-      break;
+    case 'postgres':
+      return new PostgresQueryBuilder(INSERTION_LIMIT, spinner_logger);
     default:
-      return  new MySQLQueryBuilder(INSERTION_LIMIT, spinner_logger);
-      
+      return new MySQLQueryBuilder(INSERTION_LIMIT, spinner_logger);
   }
 }
 

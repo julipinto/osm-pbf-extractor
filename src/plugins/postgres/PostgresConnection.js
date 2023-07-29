@@ -1,6 +1,8 @@
 import postgres from 'pg';
 import ora from 'ora';
-// await this.#connection.query('SELECT NOW()');
+
+// eslint-disable-next-line no-unused-vars
+import { exit } from 'process';
 
 // console_connection.succeed(`Connected to database ${this.database}`);
 
@@ -33,52 +35,78 @@ class PostgresConnection {
 
     if (this.populate) {
       try {
-        let populateConnection = await this.#conectionWithTimeout({
+        let deleteConnection = await this.#conectionWithTimeout({
           timeout: this.connection_timeout,
         });
+
         console_connection.succeed('Connected to PostgreSQL');
 
         console_connection.start(
           'Creating Postgres database with default schema'
         );
 
-        await populateConnection.query(`
+        await deleteConnection.query(`
             SELECT pg_terminate_backend (pg_stat_activity.pid)
             FROM pg_stat_activity
-            WHERE pg_stat_activity.datname = '${this.database}}';
+            WHERE pg_stat_activity.datname = '${this.database}';
           `);
 
+        // Delete all database
+
+        await deleteConnection.query(
+          `DROP TABLE IF EXISTS ${this.database}.nodes CASCADE;`
+        );
+
+        await deleteConnection.query(
+          `DROP TABLE IF EXISTS ${this.database}.ways CASCADE;`
+        );
+
+        await deleteConnection.query(
+          `DROP SCHEMA IF EXISTS ${this.database} CASCADE;`
+        );
+
         // Exclua o banco de dados se ele existir
-        await populateConnection.query(
+        await deleteConnection.query(
           `DROP DATABASE IF EXISTS ${this.database};`
         );
+
+        await deleteConnection.query(
+          `CREATE SCHEMA IF NOT EXISTS ${this.database};`
+        );
+
+        await deleteConnection.query(`CREATE DATABASE ${this.database};`);
+
+        deleteConnection.end();
+
+        let populateConnection = await this.#conectionWithTimeout({
+          timeout: this.connection_timeout,
+          database: this.database,
+        });
 
         await populateConnection.query(
           'CREATE EXTENSION IF NOT EXISTS postgis;'
         );
-
-        // Crie o novo banco de dados
-        await populateConnection.query(`CREATE DATABASE ${this.database};`);
+        // Create database
 
         await populateConnection.query(
-          `CREATE TABLE ${this.database}.nodes (node_id bigint NOT NULL, location geometry(Point, 4326) NOT NULL, PRIMARY KEY (node_id));`
-        );
-
-        await populateConnection.query(
-          `CREATE TABLE ${this.database}.node_tags (node_id bigint NOT NULL, tag_key varchar(255) NOT NULL, tag_value varchar(255) NOT NULL, PRIMARY KEY (node_id, tag_key), CONSTRAINT fk_node_tags_nodes FOREIGN KEY (node_id) REFERENCES nodes (node_id));`
+          `CREATE TABLE nodes (node_id bigint NOT NULL, location geometry(Point, 4326) NOT NULL, PRIMARY KEY (node_id));`
         );
         await populateConnection.query(
-          `CREATE TABLE ${this.database}.ways (way_id bigint NOT NULL, way_line geometry(LineString, 4326), PRIMARY KEY (way_id));`
+          `CREATE TABLE node_tags (node_id bigint NOT NULL, tag_key varchar(255) NOT NULL, tag_value varchar(255) NOT NULL, PRIMARY KEY (node_id, tag_key), CONSTRAINT fk_node_tags_nodes FOREIGN KEY (node_id) REFERENCES nodes (node_id));`
         );
         await populateConnection.query(
-          `CREATE TABLE ${this.database}.way_tags (way_id bigint NOT NULL, tag_key varchar(255) NOT NULL, tag_value varchar(255) NOT NULL, PRIMARY KEY (way_id, tag_key), CONSTRAINT fk_way_tags_ways FOREIGN KEY (way_id) REFERENCES ways (way_id));`
+          `CREATE TABLE ways (way_id bigint NOT NULL, way_line geometry(LineString, 4326), PRIMARY KEY (way_id));`
         );
         await populateConnection.query(
-          `CREATE TABLE ${this.database}.way_nodes ( way_id bigint NOT NULL, node_id bigint NOT NULL, sequence_index int NOT NULL, PRIMARY KEY (way_id, sequence_index), CONSTRAINT fk_way_nodes_ways FOREIGN KEY (way_id) REFERENCES ways (way_id), CONSTRAINT fk_way_nodes_nodes FOREIGN KEY (node_id) REFERENCES nodes (node_id));`
+          `CREATE TABLE way_tags (way_id bigint NOT NULL, tag_key varchar(255) NOT NULL, tag_value varchar(255) NOT NULL, PRIMARY KEY (way_id, tag_key), CONSTRAINT fk_way_tags_ways FOREIGN KEY (way_id) REFERENCES ways (way_id));`
+        );
+        await populateConnection.query(
+          `CREATE TABLE way_nodes ( way_id bigint NOT NULL, node_id bigint NOT NULL, sequence_index int NOT NULL, PRIMARY KEY (way_id, sequence_index), CONSTRAINT fk_way_nodes_ways FOREIGN KEY (way_id) REFERENCES ways (way_id), CONSTRAINT fk_way_nodes_nodes FOREIGN KEY (node_id) REFERENCES nodes (node_id));`
         );
 
         await populateConnection.end();
       } catch (error) {
+        console.error(error);
         console_connection.fail('Failed to populate PostgreSQL database');
       }
     }
@@ -131,9 +159,11 @@ class PostgresConnection {
 
     let lastError = null;
 
+    const connection = new postgres.Pool(config);
+
     while (Date.now() - start < timeout) {
       try {
-        const connection = await postgres.Pool(config);
+        await connection.query('SELECT NOW()');
         return connection;
       } catch (error) {
         lastError = error;
@@ -155,3 +185,19 @@ class PostgresConnection {
 }
 
 export default PostgresConnection;
+
+// await populateConnection.query(
+//   `CREATE TABLE ${this.database}.nodes (node_id bigint NOT NULL, location geometry(Point, 4326) NOT NULL, PRIMARY KEY (node_id));`
+// );
+// await populateConnection.query(
+//   `CREATE TABLE ${this.database}.node_tags (node_id bigint NOT NULL, tag_key varchar(255) NOT NULL, tag_value varchar(255) NOT NULL, PRIMARY KEY (node_id, tag_key), CONSTRAINT fk_node_tags_nodes FOREIGN KEY (node_id) REFERENCES ${this.database}.nodes (node_id));`
+// );
+// await populateConnection.query(
+//   `CREATE TABLE ${this.database}.ways (way_id bigint NOT NULL, way_line geometry(LineString, 4326), PRIMARY KEY (way_id));`
+// );
+// await populateConnection.query(
+//   `CREATE TABLE ${this.database}.way_tags (way_id bigint NOT NULL, tag_key varchar(255) NOT NULL, tag_value varchar(255) NOT NULL, PRIMARY KEY (way_id, tag_key), CONSTRAINT fk_way_tags_ways FOREIGN KEY (way_id) REFERENCES ${this.database}.ways (way_id));`
+// );
+// await populateConnection.query(
+//   `CREATE TABLE ${this.database}.way_nodes ( way_id bigint NOT NULL, node_id bigint NOT NULL, sequence_index int NOT NULL, PRIMARY KEY (way_id, sequence_index), CONSTRAINT fk_way_nodes_ways FOREIGN KEY (way_id) REFERENCES ${this.database}.ways (way_id), CONSTRAINT fk_way_nodes_nodes FOREIGN KEY (node_id) REFERENCES ${this.database}.nodes (node_id));`
+// );

@@ -23,14 +23,18 @@ class PostgresQueryBuilder {
     await this.server.disconnect();
   }
 
-  async #sanitize(str) {
-    return str.replaceAll(`\\`, `\\\\"`).replaceAll(`'`, `\\'`);
+  // #sanitize(str) {
+  //   return str.replaceAll(`\\`, `\\\\"`).replaceAll(`'`, `\\'`);
+  // }
+
+  #sanitize(str) {
+    return str.replaceAll(`\\`, `\\\\"`).replaceAll(`'`, `''`);
   }
 
   async insertNode(id, lat, lon) {
     this.spinner.load('nodes');
 
-    this.nodes.push(`(${id}, ST_GeomFromText('POINT(${lat}, ${lon})', 4326))`);
+    this.nodes.push(`(${id}, ST_GeomFromText('POINT(${lat} ${lon})', 4326))`);
     if (this.nodes.length >= this.INSERTION_LIMIT) await this.flushNodes();
   }
 
@@ -119,23 +123,7 @@ class PostgresQueryBuilder {
     this.way_nodes = [];
   }
 
-  // async insertNode(id, lat, lon) {
-  //   this.spinner.load('nodes');
-
-  //   this.nodes.push({ id, lat, lon });
-  //   if (this.nodes.length >= this.INSERTION_LIMIT) await this.flushNodes();
-  // }
-
-  // async flushNodes() {
-  //   if (this.nodes.length == 0) return;
-  //   // const values = this.nodes.map(({ id, lat, lon }) => `(${id}, '${serialize('Point', [lat, lon])}')`);
-  //   // const query = `INSERT INTO nodes (node_id, location) VALUES ${values.join(',')};`;
-
-  //   // await this.server.query(query);
-  //   this.nodes = [];
-  // }
-
-  // ... Implement other methods similarly using Postgres and PostGIS syntax
+  async finishQuery() {}
 
   async flushAll() {
     await this.flushNodes();

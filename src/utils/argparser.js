@@ -108,15 +108,14 @@ if (values.insertion_limit) {
     );
 }
 
+let insertion_limit = undefined;
+if (values.insertion_limit) {
+  insertion_limit = parseInt(values.insertion_limit);
+}
+
 const args = {
   ...values,
-  ...(values.insertion_limit || {
-    insertion_limit: parseInt(values.insertion_limit),
-  }),
+  ...(insertion_limit && { insertion_limit }),
 };
 
 export { args };
-
-// Measure-Command { osmosis --read-pbf bahia.osm.pbf
-//--write - apidb dbType = "mysql"
-//database = "bahia" user = "root" password = "1234" validateSchemaVersion = no }

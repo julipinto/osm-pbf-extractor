@@ -9,7 +9,10 @@ import LoggerDBSpinner from './utils/dbspinner.js';
 import { args } from './utils/argparser.js';
 import { paint } from './utils/conscolor.js';
 
+// (dbmanager, INSERTION_LIMIT, spinner_logger) {
+
 console.time('database load');
+
 const INSERTION_LIMIT = args.insertion_limit ?? 500;
 
 async function run() {
@@ -19,11 +22,20 @@ async function run() {
 
   const readStream = createReadStream(path);
 
-  const qb = queryBuilderFactory(args.dbmanager ,INSERTION_LIMIT, spinner_logger);
+  const qb = queryBuilderFactory(
+    args.dbmanager,
+    INSERTION_LIMIT,
+    spinner_logger
+  );
 
   await qb.init(args);
 
-  console.log(`Dumping ${paint(parse(path).base, 'blue')} into database. It may take a while...`)
+  console.log(
+    `Dumping ${paint(
+      parse(path).base,
+      'blue'
+    )} into database. It may take a while...`
+  );
 
   const consume = new Transform.PassThrough({
     objectMode: true,

@@ -68,10 +68,10 @@ Required arguments:
   -p, --password <password>          Database password.
 
 Optional arguments:
-  -m, --dbmanager <manager>          Database manager. Valid values: mysql | postgres (default: mysql).
-  -l, --insertion_limit <limit>      Number of rows to be inserted at once (default: 500).
+  -m, --dbmanager <manager>          Database manager. Valid values: mysql | postgres | neo4j (default: mysql).
+  -l, --insertion_limit <limit>      Number of rows to be inserted at once (default: Insert what the chunk size of the pipeline provide).
   -h, --hostname <host>              Database host (default: localhost).
-  -o, --port <port>                   Database port (default value of each database chosen, ex: MySQL: 3306)
+  -o, --port <port>                  Database port (default value of each database chosen, ex: MySQL: 3306)
   -t, --connection_timeout <timeout> Timeout to try to connect with the database in milliseconds (default: 60000ms [one minute]).
 
 ⚠ Be careful with the following optional argument:
@@ -92,7 +92,10 @@ if (requiredArgsMissing.length > 0) {
   );
 }
 
-if (values.dbmanager && ['mysql'].find((dbm) => dbm == values.dbmanager)) {
+if (
+  values.dbmanager &&
+  !['mysql', 'postgres', 'neo4j'].includes(values.dbmanager)
+) {
   throw new Error(`Unsupported dbmanager: ${values.dbmanager}`);
 }
 
@@ -108,7 +111,7 @@ if (values.insertion_limit) {
     );
 }
 
-let insertion_limit = undefined;
+let insertion_limit = Infinity;
 if (values.insertion_limit) {
   insertion_limit = parseInt(values.insertion_limit);
 }

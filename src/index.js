@@ -11,9 +11,9 @@ import { paint } from './utils/conscolor.js';
 
 // (dbmanager, INSERTION_LIMIT, spinner_logger) {
 
-console.time('database load');
+const tik = performance.now();
 
-const INSERTION_LIMIT = args.insertion_limit ?? 500;
+const INSERTION_LIMIT = args.insertion_limit;
 
 async function run() {
   const spinner_logger = new LoggerDBSpinner();
@@ -36,6 +36,8 @@ async function run() {
       'blue'
     )} into database. It may take a while...`
   );
+
+  // performance.now();
 
   const consume = new Transform.PassThrough({
     objectMode: true,
@@ -85,14 +87,18 @@ async function run() {
     )
     .pipe(consume)
     .on('finish', async () => {
-      await qb.finishQuery();
+      // await qb.finishQuery();
       spinner_logger.spinner.succeed('Database load finished');
-      console.timeEnd('database load');
+      console.log(
+        `Database load took ${tik - performance.now()} milliseconds.`
+      );
       qb.close();
     })
     .on('error', (err) => {
       spinner_logger.spinner.fail('Database load failed');
-      console.timeEnd('database load');
+      console.log(
+        `Database load took ${tik - performance.now()} milliseconds.`
+      );
       console.log(err);
       qb.close();
     });

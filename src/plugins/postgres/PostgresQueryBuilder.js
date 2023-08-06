@@ -1,5 +1,6 @@
-// import { parse, serialize } from 'pg-geometry';
 import PostgresConnection from './PostgresConnection.js';
+// import { createWriteStream } from 'fs';
+// import util from 'util';
 
 class PostgresQueryBuilder {
   nodes = [];
@@ -7,11 +8,14 @@ class PostgresQueryBuilder {
   ways = [];
   way_tags = [];
   way_nodes = [];
+  // log_file = null;
 
   constructor(INSERTION_LIMIT, spinner) {
     this.server = null;
     this.INSERTION_LIMIT = INSERTION_LIMIT;
     this.spinner = spinner;
+
+    // this.log_file = createWriteStream('.' + '/debug.log', { flags: 'w' });
   }
 
   async init(args) {
@@ -22,10 +26,6 @@ class PostgresQueryBuilder {
   async close() {
     await this.server.disconnect();
   }
-
-  // #sanitize(str) {
-  //   return str.replaceAll(`\\`, `\\\\"`).replaceAll(`'`, `\\'`);
-  // }
 
   #sanitize(str) {
     return str.replaceAll(`\\`, `\\\\"`).replaceAll(`'`, `''`);
@@ -125,7 +125,16 @@ class PostgresQueryBuilder {
 
   async finishQuery() {}
 
+  // async saveLog() {
+  //   this.log_file.write(
+  //     util.format(
+  //       `nodes: ${this.nodes.length}, node_tags: ${this.node_tags.length}, ways: ${this.ways.length}, way_tags: ${this.way_tags.length}, way_nodes: ${this.way_nodes.length}\n`
+  //     )
+  //   );
+  // }
+
   async flushAll() {
+    // await this.saveLog();
     await this.flushNodes();
     await this.flushNodeTags();
     await this.flushWays();

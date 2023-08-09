@@ -31,6 +31,39 @@ class PostgresQueryBuilder {
     return str.replaceAll(`\\`, `\\\\"`).replaceAll(`'`, `''`);
   }
 
+  /////////////////////////////////////////////////////////
+
+  async handleNode(node) {
+    await this.insertNode(node.id, node.lat, node.lon);
+
+    // Iterate through tags if has any
+    if (node.tags) {
+      for (let [key, value] of Object.entries(node.tags)) {
+        await this.insertNodeTag(node.id, key, value);
+      }
+    }
+  }
+
+  async handleWay(way) {
+    await this.insertWay(way.id);
+
+    // Iterate through tags if has any
+    if (way.tags) {
+      for (let [key, value] of Object.entries(way.tags)) {
+        await this.insertWayTag(way.id, key, value);
+      }
+    }
+
+    // Iterate through refs if has any
+    if (way.refs) {
+      for (let i = 0; i < way.refs.length; i++) {
+        await this.insertWayNode(way.id, way.refs[i], i);
+      }
+    }
+  }
+
+  /////////////////////////////////////////////////////////
+
   async insertNode(id, lat, lon) {
     this.spinner.load('nodes');
 

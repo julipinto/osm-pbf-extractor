@@ -11,7 +11,7 @@ import { paint } from './utils/conscolor.js';
 
 // (dbmanager, INSERTION_LIMIT, spinner_logger) {
 
-const tik = performance.now();
+console.time('database load');
 
 const INSERTION_LIMIT = args.insertion_limit;
 
@@ -36,41 +36,30 @@ async function run() {
       'blue'
     )} into database. It may take a while...`
   );
-
-  // performance.now();
+  let count = 0;
 
   const consume = new Transform.PassThrough({
     objectMode: true,
     transform: async (items, enc, next) => {
+      const tik = performance.now();
       for (let item of items) {
         // Insert Nodes
-        if (item.type == 'node') {
-          await qb.insertNode(item.id, item.lat, item.lon);
-          // Iterate through tags if has any
-          if (item.tags) {
-            for (let [key, value] of Object.entries(item.tags)) {
-              await qb.insertNodeTag(item.id, key, value);
-            }
-          }
+        if (item.type === 'node') {
+          await qb.handleNode(item);
         }
 
         // Insert Ways
-        else if (item.type == 'way') {
-          await qb.insertWay(item.id);
-          // Iterate through tags if has any
-          if (item.tags) {
-            for (let [key, value] of Object.entries(item.tags)) {
-              await qb.insertWayTag(item.id, key, value);
-            }
-          }
-          // Iterate through refs if has any
-          if (item.refs) {
-            for (let i = 0; i < item.refs.length; i++) {
-              await qb.insertWayNode(item.id, item.refs[i], i);
-            }
-          }
+        if (item.type === 'way') {
+          await qb.handleWay(item);
         }
       }
+
+      count += 1;
+      console.log(
+        `${count}) ${items.length} items inserted ${items[0].type} ${
+          performance.now() - tik
+        }\n`
+      );
 
       await qb.flushAll();
       next();
@@ -88,19 +77,15 @@ async function run() {
     .pipe(consume)
     .on('finish', async () => {
       // await qb.finishQuery();
+      await qb.close();
       spinner_logger.spinner.succeed('Database load finished');
-      console.log(
-        `Database load took ${tik - performance.now()} milliseconds.`
-      );
-      qb.close();
+      console.timeEnd('database load');
     })
-    .on('error', (err) => {
+    .on('error', async (err) => {
+      await qb.close();
       spinner_logger.spinner.fail('Database load failed');
-      console.log(
-        `Database load took ${tik - performance.now()} milliseconds.`
-      );
+      console.timeEnd('database load');
       console.log(err);
-      qb.close();
     });
 }
 

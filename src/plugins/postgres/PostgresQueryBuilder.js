@@ -156,7 +156,7 @@ class PostgresQueryBuilder {
     this.way_nodes = [];
   }
 
-  async finishQuery() {}
+  // async finishQuery() {}
 
   // async saveLog() {
   //   this.log_file.write(

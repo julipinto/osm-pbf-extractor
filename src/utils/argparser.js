@@ -68,7 +68,7 @@ Required arguments:
   -p, --password <password>          Database password.
 
 Optional arguments:
-  -m, --dbmanager <manager>          Database manager. Valid values: mysql | postgres | neo4j (default: mysql).
+  -m, --dbmanager <manager>          Database manager. Valid values: mysql | postgres | neo4j | mongodb (default: mysql).
   -l, --insertion_limit <limit>      Number of rows to be inserted at once (default: Insert what the chunk size of the pipeline provide).
   -h, --hostname <host>              Database host (default: localhost).
   -o, --port <port>                  Database port (default value of each database chosen, ex: MySQL: 3306)
@@ -77,6 +77,8 @@ Optional arguments:
 ⚠ Be careful with the following optional argument:
   -A, --populate                     ⚠ Populate the database with the default schema (default: false).
 ⚠ Warning: This command will drop all tables to structure a database with the default schema.
+
+  -h, --help                         Show this help message and exit.
 
 Examples:
   pbfx --input_file <path_to_file> --database <db_name> --user <user> --password <password> --dbmanager <dbmanager> --insertion_limit <limit> --hostname <host> --port <port>
@@ -94,7 +96,7 @@ if (requiredArgsMissing.length > 0) {
 
 if (
   values.dbmanager &&
-  !['mysql', 'postgres', 'neo4j'].includes(values.dbmanager)
+  !['mysql', 'postgres', 'neo4j', 'mongodb'].includes(values.dbmanager)
 ) {
   throw new Error(`Unsupported dbmanager: ${values.dbmanager}`);
 }

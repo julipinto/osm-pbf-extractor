@@ -35,7 +35,7 @@ class Neo4jConnection {
 
     if (this.populate) {
       try {
-        driver = await this.#connectionWithTimeout({
+        driver = await this.#connectWithTimeout({
           timeout: this.connection_timeout,
         });
 
@@ -51,7 +51,7 @@ class Neo4jConnection {
     }
 
     try {
-      driver = await this.#connectionWithTimeout({
+      driver = await this.#connectWithTimeout({
         timeout: this.connection_timeout,
         database: this.database,
       });
@@ -85,7 +85,7 @@ class Neo4jConnection {
     }
   }
 
-  async #connectionWithTimeout({ timeout, database }) {
+  async #connectWithTimeout({ timeout, database }) {
     const retryInterval = 5_000;
     const start = Date.now();
 
@@ -108,7 +108,10 @@ class Neo4jConnection {
       } catch (error) {
         lastError = error;
         // ServiceUnavailable
-        if (error.code === 'ECONNREFUSED') {
+        if (
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ServiceUnavailable'
+        ) {
           console.error(`Connection refused. Retrying in ${retryInterval}ms`);
           await new Promise((resolve) => setTimeout(resolve, retryInterval));
           continue;

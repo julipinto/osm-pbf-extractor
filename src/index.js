@@ -9,8 +9,6 @@ import LoggerDBSpinner from './utils/dbspinner.js';
 import { args } from './utils/argparser.js';
 import { paint } from './utils/conscolor.js';
 
-// (dbmanager, INSERTION_LIMIT, spinner_logger) {
-
 console.time('database load');
 
 const INSERTION_LIMIT = args.insertion_limit;
@@ -36,12 +34,10 @@ async function run() {
       'blue'
     )} into database. It may take a while...`
   );
-  let count = 0;
 
   const consume = new Transform.PassThrough({
     objectMode: true,
     transform: async (items, enc, next) => {
-      const tik = performance.now();
       for (let item of items) {
         // Insert Nodes
         if (item.type === 'node') {
@@ -53,13 +49,6 @@ async function run() {
           await qb.handleWay(item);
         }
       }
-
-      count += 1;
-      console.log(
-        `${count}) ${items.length} items inserted ${items[0].type} ${
-          performance.now() - tik
-        }\n`
-      );
 
       await qb.flushAll();
       next();
@@ -76,7 +65,6 @@ async function run() {
     )
     .pipe(consume)
     .on('finish', async () => {
-      // await qb.finishQuery();
       await qb.close();
       spinner_logger.spinner.succeed('Database load finished');
       console.timeEnd('database load');

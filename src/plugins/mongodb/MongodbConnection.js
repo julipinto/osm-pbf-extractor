@@ -45,6 +45,7 @@ class MongodbConnection {
         await ways_collection.deleteMany({});
         const relations_collection = db.collection('relations');
         await relations_collection.deleteMany({});
+        deleteConnection.close();
       } catch (error) {
         console.log(error);
         console_connection.fail('Failed to connect to MongoDB');

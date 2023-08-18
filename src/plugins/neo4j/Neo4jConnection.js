@@ -4,7 +4,6 @@ import ora from 'ora';
 import { exit } from 'process';
 
 class Neo4jConnection {
-  #session = null;
   #driver = null;
 
   constructor({
@@ -43,6 +42,7 @@ class Neo4jConnection {
         let session = driver.session();
 
         await session.run(`MATCH (n) DETACH DELETE n;`);
+        session.close();
       } catch (error) {
         console.log(error);
         console_connection.fail('Failed to connect to Neo4j');
@@ -57,7 +57,6 @@ class Neo4jConnection {
       });
 
       this.#driver = driver;
-      this.#session = driver.session();
 
       console_connection.succeed(`Connected to database ${this.database}`);
     } catch (error) {

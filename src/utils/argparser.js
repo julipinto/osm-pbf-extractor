@@ -68,7 +68,7 @@ Required arguments:
   -p, --password <password>          Database password.
 
 Optional arguments:
-  -m, --dbmanager <manager>          Database manager. Valid values: mysql | postgres | neo4j | mongodb (default: mysql).
+  -m, --dbmanager <manager>          Database manager. Valid values: mysql | postgres | neo4j | mongodb | marklogic (default: mysql).
   -l, --insertion_limit <limit>      Number of rows to be inserted at once (default: Insert what the chunk size of the pipeline provide).
   -h, --hostname <host>              Database host (default: localhost).
   -o, --port <port>                  Database port (default value of each database chosen, ex: MySQL: 3306)
@@ -96,7 +96,9 @@ if (requiredArgsMissing.length > 0) {
 
 if (
   values.dbmanager &&
-  !['mysql', 'postgres', 'neo4j', 'mongodb'].includes(values.dbmanager)
+  !['mysql', 'postgres', 'neo4j', 'mongodb', 'marklogic'].includes(
+    values.dbmanager
+  )
 ) {
   throw new Error(`Unsupported dbmanager: ${values.dbmanager}`);
 }

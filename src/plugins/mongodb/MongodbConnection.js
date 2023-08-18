@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 import ora from 'ora';
 // eslint-disable-next-line no-unused-vars
-import { exit } from 'process';
+// import { exit } from 'process';
 
 class MongodbConnection {
   #connection = null;
@@ -17,7 +17,7 @@ class MongodbConnection {
     connection_timeout,
   }) {
     this.database = database ?? 'map';
-    this.user = user ?? 'mongodb';
+    this.user = user;
     this.hostname = hostname ?? 'localhost';
     this.port = port ?? 27017;
     this.password = password ?? '';

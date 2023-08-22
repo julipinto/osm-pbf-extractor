@@ -62,7 +62,8 @@ class MySQLQueryBuilder {
   async insertNode(id, lat, lon) {
     this.spinner.load('nodes');
 
-    this.nodes.push(`(${id}, POINT(${lat}, ${lon}))`);
+    // this.nodes.push(`(${id}, POINT(${lat}, ${lon}))`);
+    this.nodes.push(`(${id}, ST_GeomFromText('POINT(${lon} ${lat})', 4326))`);
     if (this.nodes.length >= this.INSERTION_LIMIT) await this.flushNodes();
   }
 

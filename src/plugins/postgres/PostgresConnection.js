@@ -18,8 +18,8 @@ class PostgresConnection {
     populate,
     connection_timeout,
   }) {
-    this.database = database ?? 'map';
-    this.user = user ?? 'postgres';
+    this.database = database;
+    this.user = user;
     this.hostname = hostname ?? 'localhost';
     this.port = port ?? 5432;
     this.password = password ?? '';

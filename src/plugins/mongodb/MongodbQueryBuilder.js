@@ -37,7 +37,7 @@ class MongodbQueryBuilder {
     this.spinner.load('nodes');
     this.nodes.push({
       // node_id: node.node_id,
-      _id: node.node_id,
+      _id: node.id,
       location: {
         type: 'Point',
         coordinates: [node.lon, node.lat],

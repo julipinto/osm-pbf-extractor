@@ -43,6 +43,7 @@ class Neo4jConnection {
 
         await session.run(`MATCH (n) DETACH DELETE n;`);
         session.close();
+        driver.close();
       } catch (error) {
         console.log(error);
         console_connection.fail('Failed to connect to Neo4j');

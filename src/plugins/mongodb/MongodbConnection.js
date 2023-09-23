@@ -45,6 +45,9 @@ class MongodbConnection {
         await ways_collection.deleteMany({});
         const relations_collection = db.collection('relations');
         await relations_collection.deleteMany({});
+
+        await nodes_collection.createIndex({ location: '2dsphere' });
+
         deleteConnection.close();
       } catch (error) {
         console.log(error);

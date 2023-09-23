@@ -67,7 +67,7 @@ class PostgresQueryBuilder {
   async insertNode(id, lat, lon) {
     this.spinner.load('nodes');
 
-    this.nodes.push(`(${id}, ST_GeomFromText('POINT(${lat} ${lon})', 4326))`);
+    this.nodes.push(`(${id}, ST_GeomFromText('POINT(${lat} ${lon})', 0))`);
     if (this.nodes.length >= this.INSERTION_LIMIT) await this.flushNodes();
   }
 

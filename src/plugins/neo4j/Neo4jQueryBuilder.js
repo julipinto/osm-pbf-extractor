@@ -39,6 +39,11 @@ class Nqo4jQueryBuilder {
     this.spinner.load('nodes');
     let str_node_tags = '';
 
+    if (node?.tags?.location) {
+      node.tags.location_tag = node.tags.location;
+      delete node.tags.location;
+    }
+
     if (node.tags) {
       for (let [key, value] of Object.entries(node.tags)) {
         str_node_tags += `, ${this.#sanitize_key(key)}: ${this.#sanitize_value(
@@ -47,9 +52,6 @@ class Nqo4jQueryBuilder {
       }
     }
 
-    // this.nodes.push(
-    //   `{id: ${node.id}, location: point({latitude: ${node.lat}, longitude: ${node.lon}})}`
-    // );
     this.nodes.push(
       `{id: ${node.id}, location: point({latitude: ${node.lat}, longitude: ${node.lon}})${str_node_tags}}`
     );

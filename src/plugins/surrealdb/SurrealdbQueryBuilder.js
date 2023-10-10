@@ -22,14 +22,17 @@ export default class SurrealdbQueryBuilder {
 
   async handleNode(node) {
     this.spinner.load('nodes');
+
     this.nodes.push({
+      ...node.tags,
       id: node.id,
       location: {
         type: 'Point',
         coordinates: [node.lon, node.lat],
       },
-      ...node.tags,
+      ...(node?.tags?.location ? { location_tag: node.tags.location } : null),
     });
+
     if (this.nodes.length >= this.INSERTION_LIMIT) {
       await this.flushNodes();
     }
@@ -45,29 +48,10 @@ export default class SurrealdbQueryBuilder {
 
     if (way.refs) {
       for (let i = 0; i < way.refs.length; i++) {
-        // this.relations.push({
-        // id: way.id + '-' + way.refs[i] + '-' + i,
-        // way_id: `ways:${way.id}`,
-        // node_id: `nodes:${way.refs[i]}`,
-        //   way_id: `${way.id}`,
-        //   node_id: `${way.refs[i]}`,
-        //   sequence_id: i,
-        // });
-        // let id = way.id + '-' + way.refs[i] + '-' + i;
         let way_id = way.id;
         let node_id = way.refs[i];
-        // let sequence_id = i;
         this.relations.push(`('ways:${way_id}', 'nodes:${node_id}', ${i})`);
       }
-
-      // for (let i = 0; i < way.refs.length - 1; i++) {
-      //   const sourceNode = way.refs[i];
-      //   const targetNode = way.refs[i + 1];
-
-      //   this.relations.push(
-      //     `RELATE nodes:${sourceNode}->way_node->nodes:${targetNode} CONTENT {way_id:ways:${way.id}, sequence_id:${i}};`
-      //   );
-      // }
     }
 
     if (this.ways.length >= this.INSERTION_LIMIT) {

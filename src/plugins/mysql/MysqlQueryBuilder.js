@@ -62,7 +62,6 @@ class MySQLQueryBuilder {
   async insertNode(id, lat, lon) {
     this.spinner.load('nodes');
 
-    // this.nodes.push(`(${id}, POINT(${lat}, ${lon}))`);
     this.nodes.push(`(${id}, ST_GeomFromText('POINT(${lon} ${lat})', 0))`);
     if (this.nodes.length >= this.INSERTION_LIMIT) await this.flushNodes();
   }
@@ -83,17 +82,19 @@ class MySQLQueryBuilder {
     this.node_tags.push(
       `(${id}, '${this.#sanitize(key)}', '${this.#sanitize(value)}')`
     );
+
     if (this.node_tags.length >= this.INSERTION_LIMIT) {
-      // await this.flushNodes();
       await this.flushNodeTags();
     }
   }
 
   async flushNodeTags() {
     if (this.node_tags.length == 0) return;
+
     const query = `INSERT INTO node_tags (node_id, tag_key, tag_value) VALUES ${this.node_tags.join(
       ','
     )};`;
+
     await this.server.query(query);
     this.node_tags = [];
   }

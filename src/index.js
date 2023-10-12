@@ -9,7 +9,7 @@ import LoggerDBSpinner from './utils/dbspinner.js';
 import { args } from './utils/argparser.js';
 import { paint } from './utils/conscolor.js';
 
-console.time('database load');
+// console.time('database load');
 
 const INSERTION_LIMIT = args.insertion_limit;
 
@@ -28,12 +28,12 @@ async function run() {
 
   await qb.init(args);
 
+  const filename = parse(path).base;
   console.log(
-    `Dumping ${paint(
-      parse(path).base,
-      'blue'
-    )} into database. It may take a while...`
+    `Dumping ${paint(filename, 'blue')} into database. It may take a while...`
   );
+
+  const start = performance.now();
 
   const consume = new Transform.PassThrough({
     objectMode: true,
@@ -67,13 +67,18 @@ async function run() {
     .on('finish', async () => {
       await qb.close();
       spinner_logger.spinner.succeed('Database load finished');
-      console.timeEnd('database load');
+      // console.timeEnd('database load');
+      const end = performance.now();
+      console.log(`Time elapsed: ${Math.round(end - start)}ms`);
     })
     .on('error', async (err) => {
       await qb.close();
       spinner_logger.spinner.fail('Database load failed');
-      console.timeEnd('database load');
-      console.log(err);
+      const end = performance.now();
+      console.error(err);
+      console.log(
+        `Time elapsed ${paint(filename, 'blue')}: ${Math.round(end - start)}ms`
+      );
     });
 }
 

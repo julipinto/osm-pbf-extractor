@@ -35,14 +35,15 @@ class MongodbQueryBuilder {
 
   async handleNode(node) {
     this.spinner.load('nodes');
+
     this.nodes.push({
-      // node_id: node.node_id,
+      ...node.tags,
       _id: node.id,
       location: {
         type: 'Point',
         coordinates: [node.lon, node.lat],
       },
-      ...node.tags,
+      ...(node?.tags?.location ? { location_tag: node.tags.location } : null),
     });
 
     if (this.nodes.length >= this.INSERTION_LIMIT) {

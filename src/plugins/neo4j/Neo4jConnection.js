@@ -86,7 +86,7 @@ class Neo4jConnection {
   }
 
   async #connectWithTimeout({ timeout, database }) {
-    const ten_minutes = 10 * 60 * 1000;
+    const thirty_minutes = 30 * 60 * 1000;
     const retryInterval = 5_000;
     const start = Date.now();
 
@@ -94,9 +94,9 @@ class Neo4jConnection {
       `neo4j://${this.hostname}:${this.port}/neo4j`,
       neo4j.auth.basic(this.user, this.password),
       {
-        maxConnectionLifetime: ten_minutes,
-        connectionAcquisitionTimeout: ten_minutes,
-        connectionTimeout: ten_minutes,
+        maxConnectionLifetime: thirty_minutes,
+        connectionAcquisitionTimeout: thirty_minutes,
+        connectionTimeout: thirty_minutes,
         maxConnectionPoolSize: 50,
         database,
       }
